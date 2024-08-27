@@ -1,0 +1,71 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Chess-like Game</title>
+    <style>
+        /* Simple styling for the game board */
+        #board {
+            display: grid;
+            grid-template-columns: repeat(5, 100px);
+            grid-template-rows: repeat(5, 100px);
+            gap: 5px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: lightgray;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+        .playerA { background-color: red; }
+        .playerB { background-color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Advanced Chess-like Game</h1>
+    <div id="board"></div>
+    <div id="turn"></div>
+    <script>
+        const boardElement = document.getElementById('board');
+        const turnElement = document.getElementById('turn');
+        let websocket;
+
+        function initializeWebSocket() {
+            websocket = new WebSocket("ws://localhost:6789/");
+            websocket.onmessage = function(event) {
+                const gameState = JSON.parse(event.data);
+                updateBoard(gameState.grid);
+                updateTurn(gameState.turn);
+            };
+        }
+
+        function updateBoard(grid) {
+            boardElement.innerHTML = ''; // Clear the board
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (grid[row][col]) {
+                        cell.textContent = grid[row][col];
+                        cell.classList.add(grid[row][col].startsWith('A') ? 'playerA' : 'playerB');
+                    }
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        function updateTurn(turn) {
+            turnElement.textContent = `Current Player: ${turn}`;
+        }
+
+        window.onload = function() {
+            initializeWebSocket();
+        };
+    </script>
+</body>
+</html>
